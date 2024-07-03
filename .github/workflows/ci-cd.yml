@@ -1,0 +1,43 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "14"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/todo-devops:${{ github.sha }} .
+          docker push ${{ secrets.DOCKER_USERNAME }}/todo-devops:${{ github.sha }}
+
+      - name: Deploy to server
+        run: |
+          ssh user@your-server-ip "docker pull ${{ secrets.DOCKER_USERNAME }}/todo-devops:${{ github.sha }} && docker run -d -p 80:80 ${{ secrets.DOCKER_USERNAME }}/todo-devops:${{ github.sha }}"
