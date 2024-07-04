@@ -37,7 +37,3 @@ jobs:
         run: |
           docker build -t ${{ secrets.DOCKER_USERNAME }}/todo-devops:${{ github.sha }} .
           docker push ${{ secrets.DOCKER_USERNAME }}/todo-devops:${{ github.sha }}
-
-      - name: Deploy to server
-        run: |
-          ssh user@your-server-ip "docker pull ${{ secrets.DOCKER_USERNAME }}/todo-devops:${{ github.sha }} && docker run -d -p 80:80 ${{ secrets.DOCKER_USERNAME }}/todo-devops:${{ github.sha }}"
